@@ -16,4 +16,4 @@ Let's take for example the number 0x12345678 is hexadecimal:
 
 ### Oh man, this is a mess! Couldn't you just use existing tools?
 Short answer: no :slightly_smiling_face:
-Complete answer: I needed something to also convert the otherway around, since I couldn't find any tool that didn't do that, but only from .n/v64 to .z64
+Complete answer: I needed something to also convert the other way around, since I couldn't find any tool that did it, but only from .n/v64 to .z64
