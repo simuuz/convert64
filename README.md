@@ -13,7 +13,3 @@ Let's take for example the number 0x12345678 is hexadecimal:
 | Big-endian    | 0x12   | 0x34   | 0x56   | 0x78   | Same order  |
 | Little-endian | 0x78   | 0x56   | 0x34   | 0x12   | Last byte to first byte |
 | Byte-swapped  | 0x34   | 0x12   | 0x78   | 0x56   | Byte 1 is swapped with byte 2, byte 3 is swapped with byte 4, and so on... |
-
-### Oh man, this is a mess! Couldn't you just use existing tools?
-Short answer: no :slightly_smiling_face:</br>
-Complete answer: I needed something to also convert the other way around, since I couldn't find any tool that did it, but only from .n/v64 to .z64
