@@ -7,24 +7,10 @@
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        fprintf(stderr,"Must specify a file. Usage: \"./byteswap rom.n64\"\n");
+        fprintf(stderr,"Must specify a file. Usage: \"./convert64 rom.n/v/z64 [options]\"\n\nOptions:\n\t-n/v/z64\n");
         return -1;
     } else {
-        bool isz64 = (std::string(argv[1]).find("z64",std::string(argv[1]).size() - 3) != std::string::npos);
-        bool isn64 = (std::string(argv[1]).find("n64",std::string(argv[1]).size() - 3) != std::string::npos);
-        bool isv64 = (std::string(argv[1]).find("v64",std::string(argv[1]).size() - 3) != std::string::npos);
-        
-        if(!isn64 && !isz64 && !isv64) {
-            fprintf(stderr,"%s is not a valid Nintendo 64 rom!\n", argv[1]);
-            return -1;
-        }
 
-        if(isz64) {
-            if(argc < 3) {
-                fprintf(stderr,"You specified a .z64 file, so you need also to specify to what extension you want to convert it. Usage: \"./convert64 rom.z64 -n64/-v64\"\n");
-                return -1;
-            }
-        }
         bool ton64 = false, tov64 = false, toz64 = false;
 
         if(argc >= 3) {
@@ -53,7 +39,17 @@ int main(int argc, char* argv[]) {
 
         fread(in_rom.data(),1,size,fin);
 
+        bool isz64 = (in_rom[0] == 0x80);
+        bool isn64 = (in_rom[0] == 0x40);
+        bool isv64 = (in_rom[0] == 0x37);
+
+        if(!isz64 && !isn64 && !isv64) {
+            fprintf(stderr,":( i couldn't recognize this rom. Make sure it's valid!\n");
+            return -1;
+        }
+
         if (isn64) {
+            printf("Detected n64!\n");
             if (tov64) {
                 for(int i = 0; i < size; i+=4) {
                     out_rom[i] = in_rom[i+2];
@@ -78,6 +74,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (isv64) {
+            printf("Detected v64!\n");
             if (ton64) {
                 for(int i = 0; i < size; i+=4) {
                     out_rom[i] = in_rom[i+2];
@@ -102,6 +99,11 @@ int main(int argc, char* argv[]) {
         }
 
         if (isz64) {
+            printf("Detected z64!\n");
+            if(argc < 3) {
+                fprintf(stderr,"You passed a .z64 file, so you need also to specify to what extension you want to convert it. Usage: \"./convert64 rom.z64 -n/v64\"\n");
+                return -1;
+            }
             if (ton64) {
                 for(int i = 0; i < size; i+=4) {
                     out_rom[i] = in_rom[i+3];
@@ -129,7 +131,7 @@ int main(int argc, char* argv[]) {
             game_name[i - 0x20] = out_rom[i];
         }
 
-        printf("Size: %d MiB\tName: %s\tCountry code: %c\n", size/1048576, game_name.c_str(), out_rom[0x3e]);
+        printf("Size: %lu MiB\tName: %s\tCountry code: %c\n", size/1048576, game_name.c_str(), out_rom[0x3e]);
         std::string new_filename(argv[1]); new_filename.erase(new_filename.size() - 3, 3); 
 
         if(ton64)
