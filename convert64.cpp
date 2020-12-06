@@ -1,6 +1,4 @@
 #include <iostream>
-#include <fstream>
-#include <iterator>
 #include <cstdint>
 #include <vector>
 #include <cstring>
@@ -10,9 +8,8 @@ int main(int argc, char* argv[]) {
         fprintf(stderr,"Must specify a file. Usage: \"./convert64 rom.n/v/z64 [options]\"\n\nOptions:\n\t-n/v/z64\n");
         return -1;
     } else {
-
         bool ton64 = false, tov64 = false, toz64 = false;
-
+        //argument parsing
         if(argc >= 3) {
             ton64 = (strcmp(argv[2],"-n64") == 0);
             tov64 = (strcmp(argv[2],"-v64") == 0);
@@ -24,30 +21,34 @@ int main(int argc, char* argv[]) {
             toz64 = true;
         }
 
+        //opens the rom
         FILE *fin = fopen(argv[1], "rb");
         if(fin == NULL) {
             fprintf(stderr,"Could not open file\n");
             return -1;
         }
 
-        fseek(fin,0,SEEK_END);
+        fseek(fin, 0, SEEK_END);
         size_t size = ftell(fin);
-        fseek(fin,0,SEEK_SET);
+        fseek(fin, 0, SEEK_SET);
         std::vector<uint8_t> in_rom(size);
         std::vector<uint8_t> out_rom(size);
         std::string game_name;
 
-        fread(in_rom.data(),1,size,fin);
+        fread(in_rom.data(), 1, size, fin);
+        //detecting the orignal file's endianness
+        uint32_t endianness = ((in_rom[0] << 24) | (in_rom[1] << 16) | (in_rom[2] << 8) | in_rom[3]);
+        bool isz64 = (endianness == 0x80371240);
+        bool isn64 = (endianness == 0x40123780);
+        bool isv64 = (endianness == 0x37804012);
 
-        bool isz64 = (in_rom[0] == 0x80);
-        bool isn64 = (in_rom[0] == 0x40);
-        bool isv64 = (in_rom[0] == 0x37);
-
+        //checking if it's a valid rom
         if(!isz64 && !isn64 && !isv64) {
             fprintf(stderr,":( i couldn't recognize this rom. Make sure it's valid!\n");
             return -1;
         }
 
+        //Swapping routines: n64
         if (isn64) {
             printf("Detected n64!\n");
             if (tov64) {
@@ -73,6 +74,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        //v64
         if (isv64) {
             printf("Detected v64!\n");
             if (ton64) {
@@ -98,6 +100,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        //z64
         if (isz64) {
             printf("Detected z64!\n");
             if(argc < 3) {
@@ -127,13 +130,16 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        //getting the rom's internal name to print info
         for(uint8_t i = 0x20; i <= 0x33; i++) {
             game_name[i - 0x20] = out_rom[i];
         }
-
+        
+        //printing info
         printf("Size: %lu MiB\tName: %s\tCountry code: %c\n", size/1048576, game_name.c_str(), out_rom[0x3e]);
-        std::string new_filename(argv[1]); new_filename.erase(new_filename.size() - 3, 3); 
 
+        //stripping and changing the extension
+        std::string new_filename(argv[1]); new_filename.erase(new_filename.size() - 3, 3); 
         if(ton64)
             new_filename += "n64";
         else if(tov64)
@@ -141,8 +147,8 @@ int main(int argc, char* argv[]) {
         else if(toz64)
             new_filename += "z64";
 
+        //writing the new file and checking errors
         FILE *foff = fopen(new_filename.c_str(),"wb");
-
         if(foff == NULL) {
             fprintf(stderr,"Could not open file\n");
             return -1;
@@ -150,6 +156,7 @@ int main(int argc, char* argv[]) {
 
         fwrite(out_rom.data(),1,size,foff);
 
+        //print the last message and close the files, thus returning 0 -> success
         printf("Swapped! Wrote to \"%s\"\n", new_filename.c_str());
         fclose(fin);
         fclose(foff);
