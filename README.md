@@ -6,7 +6,7 @@ If a .n64 or a v64 rom is passed, the flag is assumed (so it automatically conve
 
 ### But how does it work?
 N64 files are little-endian, Z64 files are big-endian and V64 files are byte-swapped. What does this mean?
-Let's take for example the number 0x12345678 is hexadecimal:
+Let's take for example the number 0x12345678 in hexadecimal:
 
 | Endianness    | Byte 1 | Byte 2 | Byte 3 | Byte 4 | Explanation |
 | ------------- | ------ | ------ | ------ | ------ | ----------- |
